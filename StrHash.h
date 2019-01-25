@@ -198,6 +198,7 @@ private:
     }
     uint32_t max_cost = n * n;
     uint32_t min_cost = n;
+    uint32_t good_cost = n + n / 3;
 
     uint32_t init_tbl_size = 1;
     while (init_tbl_size <= n) init_tbl_size <<= 1;
@@ -227,11 +228,13 @@ private:
             // std::cout << "best_cost: " << best_cost << " best_salt: " << best_salt << " best_pos_len: " <<
             // best_pos_len
             //<< " best_mask: " << best_mask << std::endl;
-            if (cost == min_cost) return;
+            if (best_cost == min_cost) return;
           }
         }
+        if (best_cost <= good_cost) goto done;
       }
     }
+  done:
     hash_salt = best_salt;
     hash_pos_len = best_pos_len;
     tbl_mask = best_mask;
