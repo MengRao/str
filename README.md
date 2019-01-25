@@ -1,5 +1,5 @@
 ## Str
-`Str` is a fixed-length char array wrapper providing some frequently used string operations in the most efficient way, including comparison and toint.
+`Str` is a fixed-length char array wrapper providing some frequently used operations in the most efficient way, including string comparison and string to int.
 
 ## StrHash
 `StrHash` is a special hash table template taking `Str` as key and providing find operation in the most efficient way. It's special in that it can extract features from the keys already in the table and trains its hashing parameters dynamically to better distribute the keys around the table.
