@@ -14,7 +14,7 @@
 * 4: oat
 * 5: murmur
 
-User can also add other hash functions easily.
+User can also add other hash functions himself.
 
 ## Benchmark
 Tests show that `StrHash` is 7x faster than `std::unordered_map` and 3x faster than other open addressing hash table implementations such as `tsl::hopscotch_map` and `tsl::robin_map`, and that `Str` is 2x faster than `std::string` with SSO.
