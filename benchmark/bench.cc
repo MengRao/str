@@ -1,5 +1,7 @@
 #include <bits/stdc++.h>
 #include "../StrHash.h"
+#include "tsl/robin_map.h"
+#include "tsl/hopscotch_map.h"
 
 using namespace std;
 
@@ -13,8 +15,9 @@ const int loop = 1000;
 std::vector<std::string> tbl_data;
 std::vector<std::string> find_data;
 
+template<uint32_t HashFunc>
 void bench_hash() {
-  StrHash<12, Value> ht;
+  StrHash<12, Value, 0, HashFunc> ht;
   for (int i = 0; i < tbl_data.size(); i++) {
     ht.emplace(tbl_data[i].data(), i + 1);
   }
@@ -28,7 +31,8 @@ void bench_hash() {
     }
   }
   auto after = getns();
-  cout << "bench_hash sum: " << sum << " avg lat: " << (double)(after - before) / (loop * find_data.size()) << endl;
+  cout << "bench_hash " << HashFunc << " sum: " << sum
+       << " avg lat: " << (double)(after - before) / (loop * find_data.size()) << endl;
 }
 
 void bench_map() {
@@ -82,6 +86,46 @@ void bench_unordered_map() {
   }
   auto after = getns();
   cout << "bench_unordered_map sum: " << sum << " avg lat: " << (double)(after - before) / (loop * find_data.size())
+       << endl;
+}
+
+void bench_robin_map() {
+  tsl::robin_map<string, Value, std::hash<string>, std::equal_to<string>, std::allocator<std::pair<string, Value>>,
+                 true>
+    ht;
+  for (int i = 0; i < tbl_data.size(); i++) {
+    ht.emplace(tbl_data[i], i + 1);
+  }
+  int64_t sum = 0;
+  auto before = getns();
+  for (int l = 0; l < loop; l++) {
+    for (auto& s : find_data) {
+      auto it = ht.find(s);
+      if (it != ht.end()) sum += it->second;
+    }
+  }
+  auto after = getns();
+  cout << "bench_robin_map sum: " << sum << " avg lat: " << (double)(after - before) / (loop * find_data.size())
+       << endl;
+}
+
+void bench_hopscotch_map() {
+  tsl::hopscotch_map<string, Value, std::hash<string>, std::equal_to<string>, std::allocator<std::pair<string, Value>>,
+                     10, true>
+    ht;
+  for (int i = 0; i < tbl_data.size(); i++) {
+    ht.emplace(tbl_data[i], i + 1);
+  }
+  int64_t sum = 0;
+  auto before = getns();
+  for (int l = 0; l < loop; l++) {
+    for (auto& s : find_data) {
+      auto it = ht.find(s);
+      if (it != ht.end()) sum += it->second;
+    }
+  }
+  auto after = getns();
+  cout << "bench_hopscotch_map sum: " << sum << " avg lat: " << (double)(after - before) / (loop * find_data.size())
        << endl;
 }
 
@@ -162,10 +206,17 @@ int main(int argc, char** argv) {
     cin >> find_data[i];
   }
 
-  bench_hash();
+  bench_hash<0>();
+  bench_hash<1>();
+  bench_hash<2>();
+  bench_hash<3>();
+  bench_hash<4>();
+  bench_hash<5>();
   bench_map();
   bench_string_map();
   bench_unordered_map();
+  bench_robin_map();
+  bench_hopscotch_map();
   bench_bsearch();
   bench_string_bsearch();
 

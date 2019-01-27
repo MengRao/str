@@ -26,8 +26,9 @@ SOFTWARE.
 #include <vector>
 #include <map>
 #include <algorithm>
+#include <memory>
 
-template<size_t StrSZ, typename ValueT, ValueT NullV = 0>
+template<size_t StrSZ, typename ValueT, ValueT NullV = 0, uint32_t HashFunc = 0>
 class StrHash : public std::map<Str<StrSZ>, ValueT>
 {
   using KeyT = Str<StrSZ>;
@@ -78,17 +79,30 @@ public:
     for (uint16_t pos = hash;; pos = (pos + 1) & tbl_mask) {
       if (tbl[pos].hash > hash) return NullV;
       // it's likely that tbl[pos].hash == hash so we skip checking it
-      if (tbl[pos].key == key) return tbl[pos].value;
+      if (/*tbl[pos].hash == hash && */ tbl[pos].key == key) return tbl[pos].value;
     }
   }
 
 private:
+  constexpr bool HashFuncUseSalt() const { return HashFunc != 3; }
+  constexpr bool HashFuncUsePos() const { return HashFunc != 5; }
+
   uint16_t calcHash(const KeyT& key) const {
-    uint32_t hash = djbHash1(key); // try using different hash functions to benchmark
+    static_assert(HashFunc <= 5, "unsupported HashFunc");
+    uint32_t hash;
+    switch (HashFunc) {
+      case 0: hash = djbHash1(key); break;
+      case 1: hash = djbHash2(key); break;
+      case 2: hash = saxHash(key); break;
+      case 3: hash = fnvHash(key); break;
+      case 4: hash = oatHash(key); break;
+      case 5: hash = murmurHash(key); break;
+    }
     hash ^= (hash >> 16);
     return (uint16_t)(hash & tbl_mask);
   }
 
+  // 0
   uint32_t djbHash1(const KeyT& key) const {
     uint32_t h = hash_salt;
     for (int i = 0; i < hash_pos_len; i++) {
@@ -98,6 +112,7 @@ private:
     return h;
   }
 
+  // 1
   uint32_t djbHash2(const KeyT& key) const {
     uint32_t h = hash_salt;
     for (int i = 0; i < hash_pos_len; i++) {
@@ -107,6 +122,7 @@ private:
     return h;
   }
 
+  // 2
   uint32_t saxHash(const KeyT& key) const {
     uint32_t h = hash_salt;
     for (int i = 0; i < hash_pos_len; i++) {
@@ -116,7 +132,7 @@ private:
     return h;
   }
 
-  // hash_salt is not used
+  // 3, hash_salt is not used
   uint32_t fnvHash(const KeyT& key) const {
     uint32_t h = 2166136261;
     for (int i = 0; i < hash_pos_len; i++) {
@@ -126,6 +142,7 @@ private:
     return h;
   }
 
+  // 4
   uint32_t oatHash(const KeyT& key) const {
     uint32_t h = hash_salt;
     for (int i = 0; i < hash_pos_len; i++) {
@@ -140,7 +157,7 @@ private:
     return h;
   }
 
-  // hash_pos is not used
+  // 5, hash_pos is not used
   uint32_t murmurHash(const KeyT& key) const {
     const unsigned int m = 0x5bd1e995;
     const int r = 24;
@@ -207,10 +224,11 @@ private:
     uint16_t best_pos_len, best_mask;
     uint32_t best_salt, best_cost = max_cost + 1;
 
-    for (hash_pos_len = 1; hash_pos_len <= StrSZ && chcost[hash_pos_len - 1].first < max_cost; hash_pos_len++) {
+    for (hash_pos_len = 1; hash_pos_len <= StrSZ && chcost[hash_pos_len - 1].first < max_cost;
+         hash_pos_len += (HashFuncUsePos() ? 1 : StrSZ)) {
       for (uint32_t tbl_size = init_tbl_size; tbl_size <= max_tbl_size; tbl_size <<= 1) {
         tbl_mask = tbl_size - 1;
-        for (hash_salt = 0; hash_salt <= tbl_mask; hash_salt++) {
+        for (hash_salt = 0; hash_salt <= tbl_mask; hash_salt += (HashFuncUseSalt() ? 1 : tbl_size)) {
           std::map<uint16_t, uint32_t> pos_mp;
           for (auto& blk : tmp_tbl) {
             uint16_t hash = calcHash(blk.key);
@@ -244,5 +262,5 @@ private:
   uint32_t hash_salt;
   uint16_t tbl_mask;
   uint16_t hash_pos_len;
-  uint32_t hash_pos[StrSZ];
+  uint16_t hash_pos[StrSZ];
 };
