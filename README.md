@@ -22,5 +22,5 @@ Tests show that `StrHash` is 7x faster than `std::unordered_map` and 3x faster t
 `bench.cc` tests the performance of multiple string search solutions using the same data set. The data set contains the KRX option issue codes of Feb 2019 that we are interested in and are to be inserted into the table, and the first 1000 option issue codes we received from the market data(which are mostly of Feb 2019 but some are of other months) and are to be searched in the table.
 In `bench.cc`: 
 * `bench_hash<0~5>` compair the performance of different hash functions `StrHash` supports.
-* `bench_hash` vs other bench solutions shows how `StrHash` is faster than others.
+* `bench_hash` vs other searching solutions shows how `StrHash` is faster than others.
 * `bench_map` vs `bench_string_map` and `bench_bsearch` vs `bench_string_bsearch` show how `Str` is faster than `std::string`.
