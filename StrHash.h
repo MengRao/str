@@ -208,14 +208,14 @@ private:
   }
 
   void findBest(std::vector<Bucket>& tmp_tbl) {
-    uint32_t n = tmp_tbl.size();
-    std::map<char, uint32_t> chmap[StrSZ];
+    uint64_t n = tmp_tbl.size();
+    std::map<char, uint64_t> chmap[StrSZ];
     for (auto& bkt : tmp_tbl) {
       for (int i = 0; i < StrSZ; i++) {
         chmap[i][bkt.key.s[i]]++;
       }
     }
-    std::pair<uint32_t, int> chcost[StrSZ];
+    std::pair<uint64_t, int> chcost[StrSZ];
     for (int i = 0; i < StrSZ; i++) {
       chcost[i].second = i;
       chcost[i].first = 0;
@@ -227,27 +227,28 @@ private:
     for (int i = 0; i < StrSZ; i++) {
       hash_pos[i] = chcost[i].second;
     }
-    uint32_t max_cost = n * n;
-    uint32_t min_cost = n;
-    uint32_t good_cost = n + n / 3;
+    uint64_t max_cost = n * n;
+    uint64_t min_cost = n;
+    uint64_t good_cost = n + n / 3;
 
-    uint32_t init_tbl_size = 1;
+    uint64_t init_tbl_size = 1;
     while (init_tbl_size <= n) init_tbl_size <<= 1;
-    uint32_t max_tbl_size = std::min(init_tbl_size * 4, MaxTblSZ);
+    uint64_t max_tbl_size = std::min(init_tbl_size * 4, (uint64_t)MaxTblSZ);
 
-    uint32_t best_pos_len, best_mask, best_salt, best_cost = max_cost + 1;
+    uint32_t best_pos_len, best_mask, best_salt;
+    uint64_t best_cost = max_cost + 1;
 
     for (hash_pos_len = 1; hash_pos_len <= StrSZ && chcost[hash_pos_len - 1].first < max_cost;
          hash_pos_len += (HashFuncUsePos() ? 1 : StrSZ)) {
       for (uint32_t tbl_size = init_tbl_size; tbl_size <= max_tbl_size; tbl_size <<= 1) {
         tbl_mask = tbl_size - 1;
         for (hash_salt = 0; hash_salt <= tbl_mask; hash_salt += (HashFuncUseSalt() ? 1 : tbl_size)) {
-          std::map<uint32_t, uint32_t> pos_mp;
+          std::map<uint32_t, uint64_t> pos_mp;
           for (auto& blk : tmp_tbl) {
             uint32_t hash = calcHash(blk.key);
             pos_mp[hash]++;
           }
-          uint32_t cost = 0;
+          uint64_t cost = 0;
           for (auto& mppr : pos_mp) {
             cost += mppr.second * mppr.second;
           }
