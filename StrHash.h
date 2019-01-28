@@ -28,16 +28,30 @@ SOFTWARE.
 #include <algorithm>
 #include <memory>
 
-template<size_t StrSZ, typename ValueT, ValueT NullV = 0, uint32_t HashFunc = 0>
+namespace strhash_detail {
+
+template<bool SmallTbl>
+struct HashType
+{ using type = uint16_t; };
+
+template<>
+struct HashType<false>
+{ using type = uint32_t; };
+
+} // namespace
+
+template<size_t StrSZ, typename ValueT, ValueT NullV = 0, uint32_t HashFunc = 0, bool SmallTbl = true>
 class StrHash : public std::map<Str<StrSZ>, ValueT>
 {
+
   using KeyT = Str<StrSZ>;
   using Parent = std::map<KeyT, ValueT>;
-  static const uint32_t MaxTblSZ = 1 << 15;
+  using HashT = typename strhash_detail::HashType<SmallTbl>::type;
+  static const uint32_t MaxTblSZ = 1 << (SmallTbl ? 31 : 15);
   struct Bucket
   {
     alignas(KeyT::AlignSize) KeyT key;
-    uint16_t hash;
+    HashT hash;
     ValueT value;
   };
 
@@ -57,13 +71,13 @@ public:
       blk.hash = calcHash(blk.key);
     }
     std::sort(tmp_tbl.begin(), tmp_tbl.end(), [](const Bucket& a, const Bucket& b) { return a.hash < b.hash; });
-    uint16_t size = tbl_mask + 1;
+    HashT size = tbl_mask + 1;
     tbl.reset(new Bucket[size]);
-    for (uint16_t i = 0; i < size; i++) {
+    for (HashT i = 0; i < size; i++) {
       tbl[i].hash = size;
     }
     for (auto& blk : tmp_tbl) {
-      for (uint16_t pos = blk.hash;; pos = (pos + 1) & tbl_mask) {
+      for (HashT pos = blk.hash;; pos = (pos + 1) & tbl_mask) {
         if (tbl[pos].hash == size) {
           tbl[pos] = blk;
           break;
@@ -75,8 +89,8 @@ public:
   }
 
   ValueT fastFind(const KeyT& key) {
-    uint16_t hash = calcHash(key);
-    for (uint16_t pos = hash;; pos = (pos + 1) & tbl_mask) {
+    HashT hash = calcHash(key);
+    for (HashT pos = hash;; pos = (pos + 1) & tbl_mask) {
       if (tbl[pos].hash > hash) return NullV;
       // it's likely that tbl[pos].hash == hash so we skip checking it
       if (/*tbl[pos].hash == hash && */ tbl[pos].key == key) return tbl[pos].value;
@@ -84,10 +98,10 @@ public:
   }
 
 private:
-  constexpr bool HashFuncUseSalt() const { return HashFunc != 3; }
-  constexpr bool HashFuncUsePos() const { return HashFunc != 5; }
+  bool HashFuncUseSalt() const { return HashFunc != 3; }
+  bool HashFuncUsePos() const { return HashFunc != 5; }
 
-  uint16_t calcHash(const KeyT& key) const {
+  HashT calcHash(const KeyT& key) const {
     static_assert(HashFunc <= 5, "unsupported HashFunc");
     uint32_t hash;
     switch (HashFunc) {
@@ -98,8 +112,8 @@ private:
       case 4: hash = oatHash(key); break;
       case 5: hash = murmurHash(key); break;
     }
-    hash ^= (hash >> 16);
-    return (uint16_t)(hash & tbl_mask);
+    if (SmallTbl) hash ^= (hash >> 16);
+    return (HashT)hash & tbl_mask;
   }
 
   // 0
@@ -221,17 +235,16 @@ private:
     while (init_tbl_size <= n) init_tbl_size <<= 1;
     uint32_t max_tbl_size = std::min(init_tbl_size * 4, MaxTblSZ);
 
-    uint16_t best_pos_len, best_mask;
-    uint32_t best_salt, best_cost = max_cost + 1;
+    uint32_t best_pos_len, best_mask, best_salt, best_cost = max_cost + 1;
 
     for (hash_pos_len = 1; hash_pos_len <= StrSZ && chcost[hash_pos_len - 1].first < max_cost;
          hash_pos_len += (HashFuncUsePos() ? 1 : StrSZ)) {
       for (uint32_t tbl_size = init_tbl_size; tbl_size <= max_tbl_size; tbl_size <<= 1) {
         tbl_mask = tbl_size - 1;
         for (hash_salt = 0; hash_salt <= tbl_mask; hash_salt += (HashFuncUseSalt() ? 1 : tbl_size)) {
-          std::map<uint16_t, uint32_t> pos_mp;
+          std::map<uint32_t, uint32_t> pos_mp;
           for (auto& blk : tmp_tbl) {
-            uint16_t hash = calcHash(blk.key);
+            uint32_t hash = calcHash(blk.key);
             pos_mp[hash]++;
           }
           uint32_t cost = 0;
@@ -260,7 +273,7 @@ private:
 
   alignas(64) std::unique_ptr<Bucket[]> tbl;
   uint32_t hash_salt;
-  uint16_t tbl_mask;
+  HashT tbl_mask;
   uint16_t hash_pos_len;
   uint16_t hash_pos[StrSZ];
 };
