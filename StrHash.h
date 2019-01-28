@@ -90,10 +90,13 @@ public:
 
   ValueT fastFind(const KeyT& key) {
     HashT hash = calcHash(key);
-    for (HashT pos = hash;; pos = (pos + 1) & tbl_mask) {
+    HashT pos = hash;
+    if (tbl[pos].hash > hash) return NullV;
+    if (tbl[pos].key == key) return tbl[pos].value;
+    for (;; pos = (pos + 1) & tbl_mask) {
+      if (tbl[pos].hash < hash) continue;
       if (tbl[pos].hash > hash) return NullV;
-      // it's likely that tbl[pos].hash == hash so we skip checking it
-      if (/*tbl[pos].hash == hash && */ tbl[pos].key == key) return tbl[pos].value;
+      return tbl[pos].value;
     }
   }
 
