@@ -57,11 +57,11 @@ public:
       len -= 4;
     }
     switch (len) {
-      case 0: return true;
       case 1: return *p1 == *p2;
       case 2: return *(uint16_t*)p1 == *(uint16_t*)p2;
       case 3: return *(uint16_t*)p1 == *(uint16_t*)p2 && p1[2] == p2[2];
     };
+    return true;
   }
   bool operator==(const Str<SIZE>& rhs) const { return operator==(rhs.s); }
   bool operator!=(const char* p) const { return !operator==(p); }
