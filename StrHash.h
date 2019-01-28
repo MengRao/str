@@ -88,7 +88,7 @@ public:
     return true;
   }
 
-  ValueT fastFind(const KeyT& key) {
+  ValueT fastFind(const KeyT& key) const {
     HashT hash = calcHash(key);
     for (HashT pos = hash;; pos = (pos + 1) & tbl_mask) {
       if (tbl[pos].hash > hash) return NullV;
