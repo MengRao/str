@@ -114,6 +114,31 @@ public:
     return ret;
   }
 
+  int64_t toi64() const {
+    int64_t ret = 0;
+    switch (SIZE) {
+      case 19: ret += (s[SIZE - 19] - '0') * 1000000000000000000LL;
+      case 18: ret += (s[SIZE - 18] - '0') * 100000000000000000LL;
+      case 17: ret += (s[SIZE - 17] - '0') * 10000000000000000LL;
+      case 16: ret += (s[SIZE - 16] - '0') * 1000000000000000LL;
+      case 15: ret += (s[SIZE - 15] - '0') * 100000000000000LL;
+      case 14: ret += (s[SIZE - 14] - '0') * 10000000000000LL;
+      case 13: ret += (s[SIZE - 13] - '0') * 1000000000000LL;
+      case 12: ret += (s[SIZE - 12] - '0') * 100000000000LL;
+      case 11: ret += (s[SIZE - 11] - '0') * 10000000000LL;
+      case 10: ret += (s[SIZE - 10] - '0') * 1000000000LL;
+      case 9: ret += (s[SIZE - 9] - '0') * 100000000LL;
+      case 8: ret += (s[SIZE - 8] - '0') * 10000000LL;
+      case 7: ret += (s[SIZE - 7] - '0') * 1000000LL;
+      case 6: ret += (s[SIZE - 6] - '0') * 100000LL;
+      case 5: ret += (s[SIZE - 5] - '0') * 10000LL;
+      case 4: ret += (s[SIZE - 4] - '0') * 1000LL;
+      case 3: ret += (s[SIZE - 3] - '0') * 100LL;
+      case 2: ret += (s[SIZE - 2] - '0') * 10LL;
+      case 1: ret += (s[SIZE - 1] - '0');
+    };
+    return ret;
+  }
 };
 
 template<size_t SIZE>
