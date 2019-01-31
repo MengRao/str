@@ -32,6 +32,7 @@ template<size_t SIZE>
 class Str
 {
 public:
+  static const int Size = SIZE;
   static const int AlignSize = SIZE >= 7 ? 8 : 4;
   char s[SIZE];
 
