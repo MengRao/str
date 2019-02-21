@@ -47,12 +47,14 @@ class StrHash : public std::map<Str<StrSZ>, ValueT>
   using KeyT = Str<StrSZ>;
   using Parent = std::map<KeyT, ValueT>;
   using HashT = typename strhash_detail::HashType<SmallTbl>::type;
-  static const uint32_t MaxTblSZ = 1 << (SmallTbl ? 31 : 15);
+  static const uint32_t MaxTblSZ = 1u << (SmallTbl ? 15 : 31);
   struct Bucket
   {
     alignas(KeyT::AlignSize) KeyT key;
     HashT hash;
     ValueT value;
+    Bucket() = default;
+    Bucket(const KeyT& k, const ValueT& v) : key(k), value(v) {}
   };
 
 public:
@@ -62,9 +64,7 @@ public:
     std::vector<Bucket> tmp_tbl;
     tmp_tbl.reserve(n);
     for (auto& pr : *this) {
-      tmp_tbl.emplace_back();
-      tmp_tbl.back().key = pr.first;
-      tmp_tbl.back().value = pr.second;
+      tmp_tbl.emplace_back(pr.first, pr.second);
     }
     findBest(tmp_tbl);
     for (auto& blk : tmp_tbl) {
