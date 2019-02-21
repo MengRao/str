@@ -27,7 +27,7 @@ void bench() {
     NumStr numstr = str.data();
     assert(numstr.toi() == num);
     NumStr teststr;
-    teststr.fromi2(num);
+    teststr.fromi(num);
     assert(teststr == numstr);
     nums[i] = num;
     strs[i] = numstr;
@@ -52,7 +52,7 @@ void bench() {
   before = getns();
   for (int l = 0; l < loop; l++) {
     for (auto num : nums) {
-      (*(NumStr*)res.str).fromi2(num);
+      (*(NumStr*)res.str).fromi(num);
       sum += res.num;
     }
   }
