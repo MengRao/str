@@ -39,6 +39,9 @@ public:
   Str() {}
   Str(const char* p) { *this = *(const Str<SIZE>*)p; }
 
+  char& operator[](int i) { return s[i]; }
+  char operator[](int i) const { return s[i]; }
+
   bool operator==(const char* p2) const {
     const char* p1 = s;
     uint32_t len = SIZE;
