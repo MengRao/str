@@ -33,6 +33,8 @@ class Str
 {
 public:
   static const int Size = SIZE;
+  // Str is not required to align with AlignSize, in order to provide flexibility as a pure char array wrapper
+  // but aligning Str could speed up comparison operations
   static const int AlignSize = SIZE >= 7 ? 8 : 4;
   char s[SIZE];
 
