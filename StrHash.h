@@ -235,7 +235,7 @@ private:
     while (init_tbl_size <= n) init_tbl_size <<= 1;
     uint64_t max_tbl_size = std::min(init_tbl_size * 4, (uint64_t)MaxTblSZ);
 
-    uint32_t best_pos_len = 0, best_mask = 0, best_salt = 0;
+    uint32_t best_pos_len = 0, best_mask = init_tbl_size - 1, best_salt = 0;
     uint64_t best_cost = max_cost + 1;
 
     for (hash_pos_len = 1; hash_pos_len <= StrSZ && chcost[hash_pos_len - 1].first < max_cost;
