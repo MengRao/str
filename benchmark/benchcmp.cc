@@ -11,7 +11,7 @@ template<size_t Size>
 void fillRand(Str<Size>& str) {
   for (int i = 0; i < Size; i++) {
     str[i] = rand() & 0xff;
-    if (str[i] == 0) str[i] = 1; // don't allow for null char, otherwise strncmp cheats
+    if (str[i] == 0) str[i] = 1; // don't gen null char, otherwise strncmp could cheat
   }
 }
 
