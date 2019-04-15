@@ -21,7 +21,7 @@ Tests show that `StrHash` is 7x faster than `std::unordered_map` and 3x faster t
 
 `Str`'s `operator==` and `compare` is 2x faster than `strncmp`/`memcmp` or those of `std::string`.
 
-`Str`'s `fromi` and `toi` is 10x faster than `stoi`/`to_string`.
+`Str`'s `fromi` and `toi` is 10x faster than `stoi`/`strtol`/`to_string`/`sprintf`.
 
 `bench.cc` tests the performance of multiple string search solutions using the same data set. The data set contains the KRX option issue codes of Feb 2019 that we are interested in and are to be inserted into the table, and the first 1000 option issue codes we received from the market data(which are mostly of Feb 2019 but some are of other months) and are to be searched in the table.
 In `bench.cc`: 
