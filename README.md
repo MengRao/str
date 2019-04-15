@@ -1,5 +1,5 @@
 ## Str
-`Str` is a char array wrapper providing some frequently used operations in the most efficient way, including string comparison and string to int.
+`Str` is a char array wrapper providing some frequently used operations in the most efficient way(supporting AVX512 SIMD optimization), including string comparisons and conversion to/from integers.
 
 ## StrHash
 `StrHash` is an adaptive open addressing hash table template taking `Str` as key and providing a find function in the most efficient way. It's adaptive in that it can extract features from the keys contained in the table and train its hashing parameters dynamically to better distribute the keys to avoid collision to some extent.
@@ -17,10 +17,18 @@
 User can also add other hash functions himself.
 
 ## Benchmark
-Tests show that `StrHash` is 7x faster than `std::unordered_map` and 3x faster than other open addressing hash table implementations such as `tsl::hopscotch_map` and `tsl::robin_map`, and that `Str` is 2x faster than `std::string` with SSO.
+Tests show that `StrHash` is 7x faster than `std::unordered_map` and 3x faster than other open addressing hash table implementations such as `tsl::hopscotch_map` and `tsl::robin_map`.
+
+`Str`'s `operator==` and `compare` is 2x faster than `strncmp`/`memcmp` or those of `std::string`.
+
+`Str`'s `fromi` and `toi` is 10x faster than `stoi`/`to_string`.
 
 `bench.cc` tests the performance of multiple string search solutions using the same data set. The data set contains the KRX option issue codes of Feb 2019 that we are interested in and are to be inserted into the table, and the first 1000 option issue codes we received from the market data(which are mostly of Feb 2019 but some are of other months) and are to be searched in the table.
 In `bench.cc`: 
 * `bench_hash<0~5>` compair the performance of different hash functions `StrHash` supports.
 * `bench_hash` vs other searching solutions shows how `StrHash` is faster than others.
 * `bench_map` vs `bench_string_map` and `bench_bsearch` vs `bench_string_bsearch` show how `Str` is faster than `std::string`.
+
+`benchcmp.cc` tests string comparison operations.
+
+`benchnum.cc` tests conversions to/from integers.
