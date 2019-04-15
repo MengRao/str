@@ -15,6 +15,7 @@ uint32_t getRand() {
 }
 
 string dest;
+char buf[1024];
 
 template<uint32_t Size>
 void bench() {
@@ -35,19 +36,14 @@ void bench() {
     string str = to_string(num);
     while (str.size() < Size) str = string("0") + str;
     NumStr numstr = str.data();
-    if (numstr.toi64() != num) {
-      cout << "toi64: " << numstr.toi64() << endl;
-      cout << "num: " << num << endl;
-    }
     assert(numstr.toi64() == num);
     assert(stoll(str) == num);
+    assert(strtoll(str.data(), NULL, 10) == num);
     NumStr teststr;
     teststr.fromi(num);
-    if (teststr != numstr) {
-      cout << "teststr: " << teststr << endl;
-      cout << "numstr: " << numstr << endl;
-    }
     assert(teststr == numstr);
+    sprintf(buf, "%0*lld", Size, num);
+    assert(str == buf);
     nums[i] = num;
     strs[i] = numstr;
     strings[i] = str;
@@ -78,6 +74,18 @@ void bench() {
   }
 
   {
+    uint64_t sum = 0;
+    auto before = getns();
+    for (int l = 0; l < loop; l++) {
+      for (auto& str : strings) {
+        sum += strtoll(str.data(), NULL, 10);
+      }
+    }
+    auto after = getns();
+    cout << "bench " << Size << " strtoll: " << (double)(after - before) / (loop * datasize) << " res: " << sum << endl;
+  }
+
+  {
     union
     {
       uint64_t num;
@@ -105,6 +113,18 @@ void bench() {
     }
     auto after = getns();
     cout << "bench " << Size << " to_string: " << (double)(after - before) / (loop * datasize) << " res: " << dest
+         << endl;
+  }
+
+  {
+    auto before = getns();
+    for (int l = 0; l < loop; l++) {
+      for (auto num : nums) {
+        sprintf(buf, "%0*lld", Size, num);
+      }
+    }
+    auto after = getns();
+    cout << "bench " << Size << " sprintf: " << (double)(after - before) / (loop * datasize) << " res: " << dest
          << endl;
   }
 
