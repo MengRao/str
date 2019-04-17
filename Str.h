@@ -100,7 +100,7 @@ public:
       p2 += 8;
       len -= 8;
     }
-    for (int i = 0; i < len; i++) {
+    for (size_t i = 0; i < len; i++) {
       int res = (int)(uint8_t)p1[i] - (int)(uint8_t)p2[i];
       if (res) return res;
     }

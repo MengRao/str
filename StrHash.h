@@ -211,12 +211,12 @@ private:
     uint64_t n = tmp_tbl.size();
     std::map<char, uint64_t> chmap[StrSZ];
     for (auto& bkt : tmp_tbl) {
-      for (int i = 0; i < StrSZ; i++) {
+      for (size_t i = 0; i < StrSZ; i++) {
         chmap[i][bkt.key.s[i]]++;
       }
     }
     std::pair<uint64_t, int> chcost[StrSZ];
-    for (int i = 0; i < StrSZ; i++) {
+    for (size_t i = 0; i < StrSZ; i++) {
       chcost[i].second = i;
       chcost[i].first = 0;
       for (auto& mppr : chmap[i]) {
@@ -224,7 +224,7 @@ private:
       }
     }
     std::sort(chcost, chcost + StrSZ);
-    for (int i = 0; i < StrSZ; i++) {
+    for (size_t i = 0; i < StrSZ; i++) {
       hash_pos[i] = chcost[i].second;
     }
     uint64_t max_cost = n * n;
