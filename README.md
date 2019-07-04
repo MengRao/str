@@ -18,7 +18,7 @@
 User can also add other hash functions himself.
 
 `StrHash` is also suitable to have integers(such as uint32_t or uint64_t) as key for searching. Define `StrHash<8, Value, NullV, 6>`
-for `uint64_t` and `StrHash<4, Value, NullV, 6>` for uint32_t, see `benchfindint.cc` for detailed usage.
+for uint64_t and `StrHash<4, Value, NullV, 6>` for uint32_t, see `benchfindint.cc` for detailed usage.
 
 ## Benchmark
 Tests show that `StrHash` is 7x faster than `std::unordered_map` and 3x faster than other open addressing hash table implementations such as `tsl::hopscotch_map` and `tsl::robin_map`.
