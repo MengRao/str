@@ -38,6 +38,19 @@ template<>
 struct HashType<false>
 { using type = uint32_t; };
 
+template<typename T>
+uint32_t intHash(const T& s);
+
+template<>
+uint32_t intHash(const Str<4>& s) {
+  return *(uint32_t*)&s;
+}
+
+template<>
+uint32_t intHash(const Str<8>& s) { // simply truncate to lower 4 bytes
+  return (uint32_t)(*(uint64_t*)&s);
+}
+
 } // namespace
 
 template<size_t StrSZ, typename ValueT, ValueT NullV = 0, uint32_t HashFunc = 0, bool SmallTbl = true>
@@ -102,7 +115,7 @@ private:
   bool HashFuncUsePos() const { return HashFunc != 5; }
 
   HashT calcHash(const KeyT& key) const {
-    static_assert(HashFunc <= 5, "unsupported HashFunc");
+    static_assert(HashFunc <= 6, "unsupported HashFunc");
     uint32_t hash;
     switch (HashFunc) {
       case 0: hash = djbHash1(key); break;
@@ -111,6 +124,7 @@ private:
       case 3: hash = fnvHash(key); break;
       case 4: hash = oatHash(key); break;
       case 5: hash = murmurHash(key); break;
+      case 6: hash = intHash(key); break;
     }
     if (SmallTbl) hash ^= (hash >> 16);
     return (HashT)hash & tbl_mask;
@@ -206,6 +220,9 @@ private:
     h ^= h >> 15;
     return h;
   }
+
+  // 6: when key is actually an integer(e.g. uint32_t or uint64_t), return itself as hash value
+  uint32_t intHash(const KeyT& key) const { return strhash_detail::intHash<KeyT>(key); }
 
   void findBest(std::vector<Bucket>& tmp_tbl) {
     uint64_t n = tmp_tbl.size();

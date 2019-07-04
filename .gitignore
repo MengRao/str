@@ -1,3 +1,4 @@
-bench
+benchfindstr
+benchfindint
 benchnum
 benchcmp
