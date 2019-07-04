@@ -9,11 +9,12 @@ inline uint64_t getns() {
   return std::chrono::high_resolution_clock::now().time_since_epoch().count();
 }
 
+using IntT = uint64_t;
 using Key = Str<8>;
 using Value = uint16_t;
 const int loop = 1000;
-vector<uint64_t> tbl_data;
-vector<uint64_t> find_data;
+vector<IntT> tbl_data;
+vector<IntT> find_data;
 
 template<uint32_t HashFunc>
 void bench_hash() {
@@ -36,7 +37,7 @@ void bench_hash() {
 }
 
 void bench_map() {
-  map<uint64_t, Value> ht;
+  map<IntT, Value> ht;
   for (int i = 0; i < tbl_data.size(); i++) {
     ht.emplace(tbl_data[i], i + 1);
   }
@@ -54,7 +55,7 @@ void bench_map() {
 }
 
 void bench_unordered_map() {
-  unordered_map<uint64_t, Value> ht;
+  unordered_map<IntT, Value> ht;
   for (int i = 0; i < tbl_data.size(); i++) {
     ht.emplace(tbl_data[i], i + 1);
   }
@@ -73,9 +74,7 @@ void bench_unordered_map() {
 }
 
 void bench_robin_map() {
-  tsl::robin_map<uint64_t, Value, std::hash<uint64_t>, std::equal_to<uint64_t>,
-                 std::allocator<std::pair<uint64_t, Value>>, true>
-    ht;
+  tsl::robin_map<IntT, Value, std::hash<IntT>, std::equal_to<IntT>, std::allocator<std::pair<IntT, Value>>, true> ht;
   for (int i = 0; i < tbl_data.size(); i++) {
     ht.emplace(tbl_data[i], i + 1);
   }
@@ -93,8 +92,8 @@ void bench_robin_map() {
 }
 
 void bench_hopscotch_map() {
-  tsl::hopscotch_map<uint64_t, Value, std::hash<uint64_t>, std::equal_to<uint64_t>,
-                     std::allocator<std::pair<uint64_t, Value>>, 10, true>
+  tsl::hopscotch_map<IntT, Value, std::hash<IntT>, std::equal_to<IntT>, std::allocator<std::pair<IntT, Value>>, 10,
+                     true>
     ht;
   for (int i = 0; i < tbl_data.size(); i++) {
     ht.emplace(tbl_data[i], i + 1);
@@ -114,7 +113,7 @@ void bench_hopscotch_map() {
 
 void bench_bsearch() {
   int n = tbl_data.size();
-  vector<pair<uint64_t, Value>> vec(n);
+  vector<pair<IntT, Value>> vec(n);
   for (int i = 0; i < n; i++) {
     vec[i].first = tbl_data[i];
     vec[i].second = i + 1;
@@ -156,7 +155,6 @@ int main() {
     cin >> find_data[i];
   }
 
-  cout << "tbl_data: " << tbl_data.size() << " find_data: " << find_data.size() << endl;
   bench_hash<0>();
   bench_hash<1>();
   bench_hash<2>();
