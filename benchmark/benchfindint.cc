@@ -23,6 +23,8 @@ void bench_hash() {
     ht.emplace((const char*)&tbl_data[i], i + 1);
   }
   ht.doneModify();
+  // the std::map can be cleared to save memory if only fastFind is called afterwards
+  // ht.clear();
 
   int64_t sum = 0;
   auto before = getns();
