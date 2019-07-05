@@ -9,8 +9,10 @@ inline uint64_t getns() {
   return std::chrono::high_resolution_clock::now().time_since_epoch().count();
 }
 
-using IntT = uint64_t;
-using Key = Str<8>;
+using IntT = uint64_t; // change to uint32_t or uint16_t
+const int IntLen = 8;  // change to 4 or 2
+
+using Key = Str<IntLen>;
 using Value = uint16_t;
 const int loop = 1000;
 vector<IntT> tbl_data;
@@ -18,7 +20,7 @@ vector<IntT> find_data;
 
 template<uint32_t HashFunc>
 void bench_hash() {
-  StrHash<8, Value, 0, HashFunc> ht;
+  StrHash<IntLen, Value, 0, HashFunc> ht;
   for (int i = 0; i < tbl_data.size(); i++) {
     ht.emplace((const char*)&tbl_data[i], i + 1);
   }

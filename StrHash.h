@@ -42,6 +42,11 @@ template<typename T>
 uint32_t intHash(const T& s);
 
 template<>
+uint32_t intHash(const Str<2>& s) {
+  return *(uint16_t*)&s;
+}
+
+template<>
 uint32_t intHash(const Str<4>& s) {
   return *(uint32_t*)&s;
 }
