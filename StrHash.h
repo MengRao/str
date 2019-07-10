@@ -61,7 +61,7 @@ uint32_t intHash(const Str<8>& s) { // simply truncate to lower 4 bytes
 template<size_t StrSZ, typename ValueT, ValueT NullV = 0, uint32_t HashFunc = 0, bool SmallTbl = true>
 class StrHash : public std::map<Str<StrSZ>, ValueT>
 {
-
+public:
   using KeyT = Str<StrSZ>;
   using Parent = std::map<KeyT, ValueT>;
   using HashT = typename strhash_detail::HashType<SmallTbl>::type;
@@ -75,7 +75,6 @@ class StrHash : public std::map<Str<StrSZ>, ValueT>
     Bucket(const KeyT& k, const ValueT& v) : key(k), value(v) {}
   };
 
-public:
   bool doneModify() {
     uint32_t n = Parent::size();
     if (n >= MaxTblSZ) return false;
