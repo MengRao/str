@@ -39,20 +39,22 @@ struct HashType<false>
 { using type = uint32_t; };
 
 template<typename T>
-uint32_t intHash(const T& s);
-
-template<>
-uint32_t intHash(const Str<2>& s) {
-  return *(uint16_t*)&s;
-}
-
-template<>
-uint32_t intHash(const Str<4>& s) {
+inline uint32_t intHash(const T& s) {
   return *(uint32_t*)&s;
 }
 
 template<>
-uint32_t intHash(const Str<8>& s) { // simply truncate to lower 4 bytes
+inline uint32_t intHash(const Str<2>& s) {
+  return *(uint16_t*)&s;
+}
+
+template<>
+inline uint32_t intHash(const Str<4>& s) {
+  return *(uint32_t*)&s;
+}
+
+template<>
+inline uint32_t intHash(const Str<8>& s) { // simply truncate to lower 4 bytes
   return (uint32_t)(*(uint64_t*)&s);
 }
 

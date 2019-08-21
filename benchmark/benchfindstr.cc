@@ -9,7 +9,9 @@ inline uint64_t getns() {
   return std::chrono::high_resolution_clock::now().time_since_epoch().count();
 }
 
-using Key = Str<12>;
+const int STR_LEN = 12;
+
+using Key = Str<STR_LEN>;
 using Value = uint16_t;
 const int loop = 1000;
 std::vector<std::string> tbl_data;
@@ -17,7 +19,7 @@ std::vector<std::string> find_data;
 
 template<uint32_t HashFunc>
 void bench_hash() {
-  StrHash<12, Value, 0, HashFunc> ht;
+  StrHash<STR_LEN, Value, 0, HashFunc> ht;
   for (int i = 0; i < tbl_data.size(); i++) {
     ht.emplace(tbl_data[i].data(), i + 1);
   }
@@ -38,7 +40,7 @@ void bench_hash() {
 }
 
 void bench_map() {
-  StrHash<12, Value> ht; // StrHash is itself a std::map
+  StrHash<STR_LEN, Value> ht; // StrHash is itself a std::map
   for (int i = 0; i < tbl_data.size(); i++) {
     ht.emplace(tbl_data[i].data(), i + 1);
   }
