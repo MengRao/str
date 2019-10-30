@@ -4,7 +4,7 @@
 ## StrHash
 `StrHash` is an adaptive open addressing hash table template taking `Str` as key and providing a find function in the most efficient way. It's adaptive in that it can extract features from the keys contained in the table and train its hashing parameters dynamically to distribute the keys for avoiding collision.
 
-`StrHash` is actually a subclass of `std::map`, so user can use whatever funcitons it provides to modify the table, and then call `doneModify` to train the table and `fastFind` to find keys in the table. Note that `doneModify` is pretty slow so it's not efficient to modify the table frequently between `fastFind`. It's recommended that `clear` be called immediately after `doneModify` to save memory if only `fastFind` is needed afterwards.
+`StrHash` is actually a subclass of `std::map`, so user can use whatever funcitons it provides to modify the table, and then call `doneModify` to train the table and `fastFind` to find keys in the table. Note that `doneModify` is pretty slow so it's not efficient to modify the table frequently between `fastFind`. It's recommended that `clear` be called immediately after `doneModify` if only `fastFind` is needed afterwards, so some memory can be saved.
 
 `StrHash` currently supports 7 hash functions and one of which can be selected using template parameter `HashFunc`:
 * 0: djb ver1(default)
