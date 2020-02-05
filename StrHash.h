@@ -265,7 +265,8 @@ private:
          hash_pos_len += (HashFuncUsePos() ? 1 : StrSZ)) {
       for (uint32_t tbl_size = init_tbl_size; tbl_size <= max_tbl_size; tbl_size <<= 1) {
         tbl_mask = tbl_size - 1;
-        for (hash_salt = 0; hash_salt <= tbl_mask; hash_salt += (HashFuncUseSalt() ? 1 : tbl_size)) {
+        uint32_t max_salt = std::min((uint32_t)tbl_mask, 127U);
+        for (hash_salt = 0; hash_salt <= max_salt; hash_salt += (HashFuncUseSalt() ? 1 : tbl_size)) {
           std::map<uint32_t, uint64_t> pos_mp;
           for (auto& blk : tmp_tbl) {
             uint32_t hash = calcHash(blk.key);
@@ -280,9 +281,11 @@ private:
             best_salt = hash_salt;
             best_pos_len = hash_pos_len;
             best_mask = tbl_mask;
-            // std::cout << "best_cost: " << best_cost << " best_salt: " << best_salt << " best_pos_len: " <<
-            // best_pos_len
-            //<< " best_mask: " << best_mask << std::endl;
+            /*
+            std::cout << "best_cost: " << best_cost << " best_salt: " << best_salt << " best_pos_len: " << best_pos_len
+                      << " best_mask: " << best_mask << " min_cost: " << min_cost << " good_cost: " << good_cost
+                      << std::endl;
+                      */
             if (best_cost == min_cost) return;
           }
         }

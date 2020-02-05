@@ -19,11 +19,14 @@ std::vector<std::string> find_data;
 
 template<uint32_t HashFunc>
 void bench_hash() {
-  StrHash<STR_LEN, Value, 0, HashFunc> ht;
+  StrHash<STR_LEN, Value, 0, HashFunc, true> ht;
   for (int i = 0; i < tbl_data.size(); i++) {
     ht.emplace(tbl_data[i].data(), i + 1);
   }
-  ht.doneModify();
+  if (!ht.doneModify()) {
+    cout << "table size too large, try using template parameter SmallTbl=false" << endl;
+    return;
+  }
   // the std::map can be cleared to save memory if only fastFind is called afterwards
   // ht.clear();
 
