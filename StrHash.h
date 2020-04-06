@@ -71,7 +71,7 @@ public:
   struct Bucket
   {
     alignas(KeyT::AlignSize) KeyT key;
-    HashT hash;
+    HashT hashv;
     ValueT value;
     Bucket() = default;
     Bucket(const KeyT& k, const ValueT& v) : key(k), value(v) {}
@@ -87,17 +87,17 @@ public:
     }
     findBest(tmp_tbl);
     for (auto& blk : tmp_tbl) {
-      blk.hash = calcHash(blk.key);
+      blk.hashv = calcHash(blk.key);
     }
-    std::sort(tmp_tbl.begin(), tmp_tbl.end(), [](const Bucket& a, const Bucket& b) { return a.hash < b.hash; });
+    std::sort(tmp_tbl.begin(), tmp_tbl.end(), [](const Bucket& a, const Bucket& b) { return a.hashv < b.hashv; });
     HashT size = tbl_mask + 1;
     tbl.reset(new Bucket[size]);
     for (HashT i = 0; i < size; i++) {
-      tbl[i].hash = size;
+      tbl[i].hashv = size;
     }
     for (auto& blk : tmp_tbl) {
-      for (HashT pos = blk.hash;; pos = (pos + 1) & tbl_mask) {
-        if (tbl[pos].hash == size) {
+      for (HashT pos = blk.hashv;; pos = (pos + 1) & tbl_mask) {
+        if (tbl[pos].hashv == size) {
           tbl[pos] = blk;
           break;
         }
@@ -110,7 +110,7 @@ public:
   ValueT fastFind(const KeyT& key) const {
     HashT hash = calcHash(key);
     for (HashT pos = hash;; pos = (pos + 1) & tbl_mask) {
-      if (tbl[pos].hash > hash) return NullV;
+      if (tbl[pos].hashv > hash) return NullV;
       // it's likely that tbl[pos].hash == hash so we skip checking it
       if (/*tbl[pos].hash == hash && */ tbl[pos].key == key) return tbl[pos].value;
     }
