@@ -80,6 +80,7 @@ public:
   bool doneModify() {
     uint32_t n = Parent::size();
     if (n >= MaxTblSZ) return false;
+    table_size = n;
     std::vector<Bucket> tmp_tbl;
     tmp_tbl.reserve(n);
     for (auto& pr : *this) {
@@ -115,6 +116,8 @@ public:
       if (/*tbl[pos].hash == hash && */ tbl[pos].key == key) return tbl[pos].value;
     }
   }
+
+  uint32_t getTableSize() const { return table_size; }
 
 private:
   bool HashFuncUseSalt() const { return HashFunc != 3; }
@@ -303,4 +306,5 @@ private:
   HashT tbl_mask;
   uint16_t hash_pos_len;
   uint16_t hash_pos[StrSZ];
+  uint32_t table_size;
 };
