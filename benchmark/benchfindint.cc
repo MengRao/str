@@ -2,6 +2,27 @@
 #include "../StrHash.h"
 #include "tsl/robin_map.h"
 #include "tsl/hopscotch_map.h"
+#include "robin_hood.h"
+#include "sparsehash/dense_hash_map"
+
+template<class T>
+constexpr std::string_view type_name() {
+  using namespace std;
+#ifdef __clang__
+  string_view p = __PRETTY_FUNCTION__;
+  return string_view(p.data() + 34, p.size() - 34 - 1);
+#elif defined(__GNUC__)
+  string_view p = __PRETTY_FUNCTION__;
+#if __cplusplus < 201402
+  return string_view(p.data() + 36, p.size() - 36 - 1);
+#else
+  return string_view(p.data() + 49, p.find(';', 49) - 49);
+#endif
+#elif defined(_MSC_VER)
+  string_view p = __FUNCSIG__;
+  return string_view(p.data() + 84, p.size() - 84 - 7);
+#endif
+}
 
 using namespace std;
 
@@ -9,7 +30,7 @@ inline uint64_t getns() {
   return std::chrono::high_resolution_clock::now().time_since_epoch().count();
 }
 
-using IntT = uint64_t; // change to uint32_t or uint16_t
+using IntT = uint32_t; // change to uint64_t or uint16_t
 const int IntLen = 8;  // change to 4 or 2
 
 using Key = Str<IntLen>;
@@ -40,8 +61,9 @@ void bench_hash() {
        << " avg lat: " << (double)(after - before) / (loop * find_data.size()) << endl;
 }
 
+template<typename T>
 void bench_map() {
-  map<IntT, Value> ht;
+  T ht;
   for (int i = 0; i < tbl_data.size(); i++) {
     ht.emplace(tbl_data[i], i + 1);
   }
@@ -55,53 +77,17 @@ void bench_map() {
     }
   }
   auto after = getns();
-  cout << "bench_map sum: " << sum << " avg lat: " << (double)(after - before) / (loop * find_data.size()) << endl;
-}
-
-void bench_unordered_map() {
-  unordered_map<IntT, Value> ht;
-  for (int i = 0; i < tbl_data.size(); i++) {
-    ht.emplace(tbl_data[i], i + 1);
-  }
-
-  int64_t sum = 0;
-  auto before = getns();
-  for (int l = 0; l < loop; l++) {
-    for (auto s : find_data) {
-      auto it = ht.find(s);
-      if (it != ht.end()) sum += it->second;
-    }
-  }
-  auto after = getns();
-  cout << "bench_unordered_map sum: " << sum << " avg lat: " << (double)(after - before) / (loop * find_data.size())
+  cout << type_name<T>() << ", sum: " << sum << " avg lat: " << (double)(after - before) / (loop * find_data.size())
        << endl;
 }
 
-void bench_robin_map() {
-  tsl::robin_map<IntT, Value, std::hash<IntT>, std::equal_to<IntT>, std::allocator<std::pair<IntT, Value>>, true> ht;
+void bench_dense() {
+  google::dense_hash_map<IntT, Value> ht;
+  ht.set_empty_key(0);
   for (int i = 0; i < tbl_data.size(); i++) {
     ht.emplace(tbl_data[i], i + 1);
   }
-  int64_t sum = 0;
-  auto before = getns();
-  for (int l = 0; l < loop; l++) {
-    for (auto s : find_data) {
-      auto it = ht.find(s);
-      if (it != ht.end()) sum += it->second;
-    }
-  }
-  auto after = getns();
-  cout << "bench_robin_map sum: " << sum << " avg lat: " << (double)(after - before) / (loop * find_data.size())
-       << endl;
-}
 
-void bench_hopscotch_map() {
-  tsl::hopscotch_map<IntT, Value, std::hash<IntT>, std::equal_to<IntT>, std::allocator<std::pair<IntT, Value>>, 10,
-                     true>
-    ht;
-  for (int i = 0; i < tbl_data.size(); i++) {
-    ht.emplace(tbl_data[i], i + 1);
-  }
   int64_t sum = 0;
   auto before = getns();
   for (int l = 0; l < loop; l++) {
@@ -111,8 +97,8 @@ void bench_hopscotch_map() {
     }
   }
   auto after = getns();
-  cout << "bench_hopscotch_map sum: " << sum << " avg lat: " << (double)(after - before) / (loop * find_data.size())
-       << endl;
+  cout << "dense_hash_set"
+       << ", sum: " << sum << " avg lat: " << (double)(after - before) / (loop * find_data.size()) << endl;
 }
 
 void bench_bsearch() {
@@ -166,10 +152,14 @@ int main() {
   bench_hash<4>();
   bench_hash<5>();
   bench_hash<6>(); // 6 is for integer key
-  bench_map();
-  bench_unordered_map();
-  bench_robin_map();
-  bench_hopscotch_map();
+  bench_map<map<IntT, Value>>();
+  bench_map<unordered_map<IntT, Value>>();
+  bench_map<
+    tsl::robin_map<IntT, Value, std::hash<IntT>, std::equal_to<IntT>, std::allocator<std::pair<IntT, Value>>, true>>();
+  bench_map<tsl::hopscotch_map<IntT, Value, std::hash<IntT>, std::equal_to<IntT>,
+                               std::allocator<std::pair<IntT, Value>>, 10, true>>();
+  bench_map<robin_hood::unordered_map<IntT, Value>>();
+  bench_dense();
   bench_bsearch();
 
   return 0;
