@@ -31,7 +31,7 @@ inline uint64_t getns() {
 }
 
 using IntT = uint32_t; // change to uint64_t or uint16_t
-const int IntLen = 8;  // change to 4 or 2
+constexpr int IntLen = sizeof(IntT);
 
 using Key = Str<IntLen>;
 using Value = uint16_t;
