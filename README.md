@@ -21,7 +21,7 @@ User can also add other hash functions himself.
 for uint64_t and `StrHash<4, Value, NullV, 6>` for uint32_t, see `benchfindint.cc` for detailed usage.
 
 ## Benchmark
-Tests show that `StrHash` is 7x faster than `std::unordered_map` and 3x faster than other open addressing hash table implementations such as `tsl::hopscotch_map` and `tsl::robin_map`.
+Tests show that `StrHash` is 7x faster than `std::unordered_map` and 3x faster than other open addressing hash table implementations such as `tsl::hopscotch_map`, `tsl::robin_map`, `robin_hood::unordered_map` and `google::dense_hash_map`.
 
 `Str`'s `operator==` and `compare` is 2x faster than `strncmp`/`memcmp` or those of `std::string`.
 
